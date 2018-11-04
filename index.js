@@ -24,13 +24,28 @@ var serverCounts = new Array()
 
 // Add routes
 app.get('/total', (req, res) => {
-    res.send(serverCounts.reduce((a, b) => a + b, 0).toString())
+    try {
+        res.statusCode = 200
+        res.send({
+            success: true,
+            count: serverCounts.reduce((a, b) => a + b, 0).toString()
+        })
+    } catch (err) {
+        console.log(err)
+
+        res.statusCode = 500
+        res.send({
+            success: false
+        })
+    }
 })
 
 app.post('/update', (req, res) => {
     if (req.body.key != config.server.key) {
         res.statusCode = 403
-        res.send('Invalid API key')
+        res.send({
+            success: false
+        })
         return
     }
 
@@ -39,14 +54,18 @@ app.post('/update', (req, res) => {
 
     if (!isInt(shard) || !isInt(serverCount)) {
         res.statusCode = 400
-        res.send('Invalid request')
+        res.send({
+            success: false
+        })
         return
     }
 
     serverCounts[toInt(shard)] = toInt(serverCount)
 
     res.statusCode = 200
-    res.send('Success')
+    res.send({
+        success: true
+    })
 })
 
 // Listen for connections
